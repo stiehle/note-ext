@@ -1,11 +1,12 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap");
 
 :root {
-  --font-family: Roboto sans-serif;
-  --color-palette-0: #5356ff;
-  --color-palette-1: #378ce7;
-  --color-palette-2: #67c6e3;
-  --color-palette-3: #dff5ff;
+  --font-family: Roboto;
+  --color-main: #5356ff;
+  --color-font: #378ce7;
+  --color-background: #67c6e3;
+  --color-other: #dff5ff;
+  --color-main-font: #5356ff;
 }
 
 * {
@@ -18,7 +19,7 @@
   flex-direction: row;
   width: 100vw;
   height: 100vh;
-  background-color: var(--color-palette-3);
+  background-color: var(--color-other);
   font-family: var(--font-family);
   overflow: hidden;
 }
@@ -26,7 +27,7 @@
 .sidebar-wrapper {
   width: calc(100vw - 1rem);
   height: 98vh;
-  border-right: 1px solid var(--color-palette-0);
+  border-right: 1px solid var(--color-main);
   padding: 0.5rem;
 }
 
@@ -36,8 +37,8 @@
   justify-content: space-between;
   box-shadow: 0px 0px 4px 4px rgba(0, 0, 0, 0.1);
   gap: 1rem;
-  background-color: var(--color-palette-3);
-  border: 2px solid var(--color-palette-0);
+  background-color: var(--color-other);
+  border: 2px solid var(--color-main);
   border-radius: 5px;
   margin-bottom: 0.5rem;
   height: 4rem;
@@ -74,15 +75,15 @@
   padding: 0 0.5rem;
   gap: 0.1rem;
   transition: all 0.2s ease-in-out;
-  background-color: var(--color-palette-0);
-  color: var(--color-palette-3);
+  background-color: var(--color-main);
+  color: var(--color-other);
   box-shadow: 0px 0px 5px 4px rgba(255, 0, 0, 0.1);
   border-radius: 5px;
   cursor: pointer;
 }
 
 .setup {
-  background-color: var(--color-palette-2);
+  background-color: var(--color-background);
 }
 
 .create-new {
@@ -92,7 +93,7 @@
 .create-new .icon {
   width: 2rem;
   height: 2rem;
-  color: var(--color-palette-3);
+  color: var(--color-other);
 }
 
 .notes-list {
@@ -106,13 +107,16 @@
   border-radius: 5px;
   box-shadow: 0px 0px 5px 4px rgba(0, 0, 0, 0.1);
   padding: 0.5rem;
-  transition: all 0.2s ease-in-out;
-  background-color: var(--color-palette-2);
+  background-color: var(--color-background);
   cursor: pointer;
 }
 
-.note-entry:hover {
+.note-entry:hover,
+.color-palette-wrapper:hover {
+  /* background-color: "#D3D3D3"; */
+  background-color: lightgray;
   filter: brightness(0.9);
+  cursor: pointer;
 }
 
 .note-entry-colorbar {
@@ -120,20 +124,24 @@
   flex-direction: row;
   justify-content: start;
   height: 2rem;
-  border: 1px solid black;
+  border-bottom: 1px solid var(--color-main-font);
   margin-bottom: 0.5rem;
+  align-items: center;
+  border-radius: 5px 5px 0 0;
+  font-size: 15px;
 }
 
 .note-entry-iconbar {
   display: flex;
   flex-direction: row;
-  justify-content: start;
+  justify-content: end;
+  width: fit-content;
   height: 2rem;
-  margin-bottom: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 .selected {
-  background-color: var(--color-palette-3);
+  background-color: var(--color-other);
   cursor: auto;
 }
 
@@ -146,10 +154,11 @@
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
   font-weight: 500;
-  color: var(--color-palette-0);
+  color: var(--color-main-font);
 }
+
 .note-content-teaser {
-  color: gray;
+  color: var(--color-font);
 }
 
 .note-date {
@@ -157,7 +166,7 @@
   text-align: right;
   font-style: italic;
   margin-top: 1rem;
-  color: gray;
+  color: var(--color-font);
   font-size: 0.75rem;
 }
 
@@ -180,7 +189,7 @@
   border: none;
   font-family: var(--font-family);
   outline: none;
-  color: var(--color-palette-0);
+  color: var(--color-main);
   background-color: transparent;
 }
 
@@ -211,7 +220,7 @@
 }
 
 .back {
-  background-color: var(--color-palette-2);
+  background-color: var(--color-background);
   width: fit-content;
   height: 48px;
   padding: 0 1rem;
@@ -220,67 +229,110 @@
 .icon {
   width: 2rem;
   height: 2rem;
-  color: var(--color-palette-3);
-}
-
-.logo .icon {
-  width: 70px;
-  height: 100%;
-  color: var(--color-palette-0);
-  padding: 0.2rem;
+  color: var(--color-font);
 }
 
 .icon-small {
-  color: yellow;
+  color: var(--color-font);
 }
 
 #content-input {
   font-size: 1.5rem;
   resize: none;
   height: 80vh;
-  border-bottom: 2px solid var(--color-palette-1);
+  border-bottom: 2px solid var(--color-main);
 }
 
 #title-input {
-  border-bottom: 2px solid var(--color-palette-1);
+  border-bottom: 2px solid var(--color-main);
+  color: var(--color-main);
 }
 
 .sub-menu {
   display: flex;
   flex-direction: column;
   position: relative;
-  top: 20px;
-  left: -10px;
-  height: 100px;
-  width: 150px;
-  background-color: var(--color-palette-3);
+  top: 70px;
+  left: 10px;
+  height: auto;
+  width: 293px;
+  background-color: var(--color-main);
   border-radius: 5px;
-  border: 2px solid var(--color-palette-2);
-  z-index: 10;
+  border: 2px solid var(--color-other);
+  z-index: 1;
   text-align: center;
+  box-shadow: 0px 0px 5px 4px rgba(0, 0, 0, 0.2);
+  color: var(--color-other);
 }
 
 .sub-menu-title {
   width: 100%;
+  border-bottom: 2px solid var(--color-other);
 }
 
-.sub-menu-color {
-  width: 100%;
-  height: 100%;
-
-  overflow-y: scroll;
+.sub-menu-color,
+.sub-menu-more-colors {
+  display: inherit;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: start;
+  width: auto;
+  height: fit-content;
+  overflow-y: hidden;
   overflow-x: hidden;
+  margin: 0.5rem;
+  max-height: fit-content;
+  background-color: var(--color-other);
 }
 
 .sub-menu-color-box {
-  width: 100%;
-  height: 20px;
-
-  margin: 5px;
-  line-height: 20px;
+  width: 30px;
+  height: 30px;
+  margin: 2px;
+  border-radius: 10%;
 }
 
-.colorPalette {
+.sub-menu-footer {
+  height: 20px;
+  border-bottom: none;
+  margin: 0.5rem;
+  width: 100%;
+  margin: 0.5rem auto;
+  color: var(--color-other);
+}
+
+.sub-menu-footer:hover,
+.sub-menu-color-box:hover {
+  filter: brightness(0.9);
+  cursor: pointer;
+}
+
+.color-palette {
   font-size: 1.5rem;
   width: fit-content;
+}
+
+.color-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  width: fit-content;
+  margin: 0 auto;
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.color-palette-wrapper {
+  display: flex;
+  flex-direction: row;
+  height: fit-content;
+  width: fit-content;
+  gap: 0.1rem;
+  padding: 0.2rem;
+}
+
+.color-piece {
+  width: 60px;
+  height: 50px;
+  border: 1px solid black;
+  border-radius: 5px;
 }

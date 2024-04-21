@@ -1,6 +1,23 @@
 const colorThemes = {
   palette: {
-    standard: ["Grey", "Coral", "Aqua", "Fuchsia", "Red", "Green", "Blue", "LightBlue", "Yellow", "Orange", "White"],
+    standard: [
+      "#808080",
+      "#FF7F50",
+      "#00FFFF",
+      "#FF00FF",
+      "#FF0000",
+      "#FFC0CB",
+      "#008000",
+      "#0000FF",
+      "#ADD8E6",
+      "#FFFF00",
+      "#FFA500",
+      "#FFFFFF",
+      "#000000",
+      "#FFD700",
+      "#B22222",
+      "#DDA0DD",
+    ],
     color0: ["#5356ff", "#378ce7", "#67c6e3", "#dff5ff"],
     color1: ["#4793AF", "#FFC470", "#DD5746", "#8B322C"],
     color2: ["#074173", "#1679AB", "#5DEBD7", "#C5FF95"],
@@ -8,6 +25,11 @@ const colorThemes = {
     color4: ["#1C1678", "#8576FF", "#7BC9FF", "#A3FFD6"],
     color5: ["#DBA979", "#ECCA9C", "#E8EFCF", "#AFD198"],
     color6: ["#A79277", "#D1BB9E", "#EAD8C0", "#FFF2E1"],
+    color7: ["#070F2B", "#1B1A55", "#535C91", "#9290C3"],
+    color7: ["#153448", "#3C5B6F", "#948979", "#DFD0B8"],
+    color8: ["#1E0342", "#0E46A3", "#9AC8CD", "#E1F7F5"],
+    color9: ["#000000", "#FFFFFF", "#000000", "#FFFFFF"],
+    color10: ["#FFFFFF", "#000000", "#FFFFFF", "#000000"],
   },
 };
 

@@ -16,9 +16,11 @@ const DISPLAYS = {
 };
 
 const LOCAL_STORAGE_KEY = "notesApp-notes";
+const LOCAL_STORAGE_KEY_SETUP = "notesApp-setup";
 
 let notesList = [];
 
+loadSetupFromLocalStorage();
 loadFromLocalStorage();
 
 switchDisplay();
@@ -35,7 +37,6 @@ function saveNoteEntry() {
   if (!checkOfSelectedNote()) {
     createNewNoteEntry();
   }
-
   saveToLocalStorage();
   switchDisplay();
 }
@@ -56,7 +57,6 @@ function createNewNoteEntry() {
     lastUpdated: Date.now(),
   };
   notesList.push(notesEntry);
-
   clearInput();
   showNotesList();
 }
@@ -81,52 +81,39 @@ function showNotesList() {
   let html = "";
   sortedNotesList.forEach((element) => {
     html += `
-  <div class="note-entry" data-id="${element.id}">
-  <div class="note-entry-colorbar" style="background-color: ${element.colorbar}";">
-  <div class="note-entry-iconbar">
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon-small">
-  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-  </svg>
-  </div>   
-  </div> 
-  <div class="note-title">${element.title}</div>
-  <div class="note-content-teaser">${element.content}</div>  
-  <div class="note-date">${new Date(element.lastUpdated).toLocaleString("de-DE")}</div> 
-  </div>`;
+      <div class="note-entry" data-id="${element.id}">
+          <div class="note-entry-colorbar" style="background-color: ${element.colorbar}">
+            <div class="icon-small">${element.id}</div>
+              <div class="icon-menu"></div>
+                <div class="icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                  </svg>
+                </div>
+              </div>          
+            <div class="note-title">${element.title}</div>
+        <div class="note-content-teaser">${element.content}</div>  
+        <div class="note-date">${new Date(element.lastUpdated).toLocaleString("de-DE")}</div> 
+      </div>`;
   });
-  // <div class="note-date">${element.lastUpdated} / ${new Date(element.lastUpdated).toLocaleString("de-DE")}</div>
 
   notesListEl.innerHTML = html;
-
   const notesListElListener = document.querySelectorAll(".note-entry");
-
   notesListElListener.forEach((element) => {
     // element.addEventListener("click", () => selectedNoteEntry(element.getAttribute("data-id")));
     element.addEventListener("click", selectedNoteEntry);
-    const noteEntryColorbarEl = element.querySelector(".note-entry-colorbar");
 
-    // console.log("colorbar", noteEntryColorbarEl);
-    noteEntryColorbarEl.innerHTML += element.getAttribute("data-id");
+    const noteEntryColorbarEl = element.querySelector(".note-entry-colorbar");
     noteEntryColorbarEl.setAttribute("data-id", `${element.getAttribute("data-id")}`);
+
     noteEntryColorbarEl.addEventListener("click", noteEntryColorbar);
   });
 }
 
 function noteEntryColorbar(e) {
-  this.removeEventListener("click", noteEntryColorbar);
-
-  const element = e.target;
-
-  const colorThemesAll = [
-    ...colorThemes.palette.standard,
-    ...colorThemes.palette.color0,
-    ...colorThemes.palette.color1,
-    ...colorThemes.palette.color2,
-    ...colorThemes.palette.color3,
-    ...colorThemes.palette.color4,
-    ...colorThemes.palette.color5,
-    ...colorThemes.palette.color6,
-  ];
+  checkToRemoveSubMenu();
+  const element = e.currentTarget;
+  const colors = colorThemes.palette.standard;
 
   let html1 = `
   <div class="sub-menu"> 
@@ -135,13 +122,52 @@ function noteEntryColorbar(e) {
 
   let html2 = "";
 
-  colorThemesAll.forEach((color) => {
-    html2 += `<div class="sub-menu-color-box" style="background-color: ${color};">${color}</div> `;
+  colors.forEach((color) => {
+    html2 += `<div class="sub-menu-color-box" style="background-color: ${color}" data-color="${color}"></div> `;
   });
 
-  let html3 = `</div></div>`;
+  let html3 = `
+  </div>
+    <div class="sub-menu-footer sub-menu-title">mehr Farben ...</div> 
+    <div class="sub-menu-more-colors"></div>
+  </div> 
+  `;
 
   element.innerHTML += html1 + html2 + html3;
+
+  const moreColors = element.querySelector(".sub-menu-footer");
+  moreColors.addEventListener("click", randomSubMenuColors);
+  element.classList.add("active-sub-menu");
+}
+
+function randomSubMenuColors(e) {
+  e.stopPropagation();
+
+  const numberOfColors = Object.keys(allStandardColors).length;
+
+  let html = "";
+
+  for (let i = 0; i < 32; i++) {
+    let colorNumber = getRandomNumber(0, numberOfColors);
+    let color = allStandardColors[Object.keys(allStandardColors)[colorNumber]];
+
+    html += `<div class="sub-menu-color-box" style="background-color: ${color}" data-color="${color}"></div> `;
+  }
+
+  const colorBox = getStillSelectetObject().querySelector(".sub-menu-more-colors");
+  colorBox.innerHTML = html;
+
+  const subMenuPosition = getStillSelectetObject().querySelector(".sub-menu");
+  subMenuPosition.style.top = "130px";
+}
+
+function getStillSelectetObject() {
+  const element = document.querySelector(".note-entry.selected");
+  return element;
+}
+
+function getRandomNumber(min, max) {
+  return (number = Math.floor(Math.random() * (max - min) + 1) + min);
 }
 
 function createNewText() {
@@ -173,33 +199,51 @@ function goBack() {
 }
 
 function selectedNoteEntry(e) {
-  const el = this.getAttribute("data-id");
+  const el = e.currentTarget.getAttribute("data-id");
   deleteAllSelections();
-  this.classList.add("selected");
-
+  e.currentTarget.classList.add("selected");
   const findNote = notesList.find((note) => note.id === Number(el));
-  titleInputEl.value = findNote.title;
-  contentInputEl.value = findNote.content;
 
-  if (e.target.classList.value !== "note-entry-colorbar" && e.target.classList.value !== "sub-menu-color-box") {
-    switchDisplay("text");
-  }
+  if (e.target.classList.contains("sub-menu-color-box")) {
+    const color = e.target.getAttribute("data-color");
+    findNote.colorbar = color;
 
-  if (e.target.classList.value === "sub-menu-color-box") {
-    const colorbar = this.querySelector(".note-entry-colorbar");
-    colorbar.style.backgroundColor = e.target.innerHTML;
-    findNote.colorbar = e.target.innerHTML;
-    saveToLocalStorage();
-    clearInput();
     showNotesList();
   }
+
+  const colorbarEl = e.currentTarget.querySelector(".note-entry-colorbar");
+
+  if (colorbarEl.classList.contains("active-sub-menu")) {
+    colorbarEl.classList.remove("active-sub-menu");
+    colorbarEl.classList.add("wait");
+  } else if (!colorbarEl.classList.contains("wait")) {
+    titleInputEl.value = findNote.title;
+    contentInputEl.value = findNote.content;
+    switchDisplay("text");
+  } else {
+    colorbarEl.classList.remove("wait");
+    checkToRemoveSubMenu();
+  }
+
+  saveToLocalStorage();
 }
 
 function deleteAllSelections() {
   const elements = document.querySelectorAll(".note-entry.selected");
+  // const notSelectetElements = document.querySelectorAll(".note-entry:not(.selected)");
 
   elements.forEach((select) => {
     select.classList.remove("selected");
+  });
+}
+
+function checkToRemoveSubMenu() {
+  const elements = document.querySelectorAll(".sub-menu");
+
+  elements.forEach((select) => {
+    if (select) {
+      select.remove();
+    }
   });
 }
 
@@ -214,7 +258,6 @@ function deleteNoteEntry() {
   });
 
   notesList = filteredNotesList;
-  console.log("NotesList after delete ", notesList);
 
   clearInput();
   showNotesList();
@@ -265,70 +308,87 @@ function loadFromLocalStorage() {
 function setup() {
   const notesApp = document.querySelector(".notes-app");
 
+  if (!document.querySelector(".setup-content")) {
+    // document.querySelector(".notes-app").innerHTML += `<div class="setup-content"></div>`; //don't work!
+    notesApp.insertAdjacentHTML("beforeend", `<div class="setup-content"></div>`);
+  }
   // if (!document.querySelector(".setup-content")) {
-  //   document.querySelector(".notes-app").innerHTML += `<div class="setup-content"></div>`;
+  //   const addSetupNode = document.createElement("div");
+  //   addSetupNode.classList.add("setup-content");
+  //   notesApp.appendChild(addSetupNode);
   // }
 
-  if (!document.querySelector(".setup-content")) {
-    const addSetupNode = document.createElement("div");
-    addSetupNode.classList.add("setup-content");
-    notesApp.appendChild(addSetupNode);
-  }
-
-  const html = `
-        <div class="title-and-save">
-          <button class="back">
-          
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-            </svg>
-          </button>
-          <div class="command-wrapper">
-
-          </div>
-        </div>
-        <h2 id="title-input">Farpalette wählen:</h2>
-        
-      <div class="colorPalette">
-      <input type="radio" id="color" name="color" value="color0" />
-      <label for="color0">Palette 0</label><br />
-      <input type="radio" id="color" name="color" value="color1" />
-      <label for="color1">Palette 1</label><br />
-      <input type="radio" id="color" name="color" value="color2" />
-      <label for="color2">Palette 2</label><br />
-      <input type="radio" id="color" name="color" value="color3" />
-      <label for="color3">Palette 3</label><br />
-      <input type="radio" id="color" name="color" value="color4" />
-      <label for="color4">Palette 4</label><br />
-      <input type="radio" id="color" name="color" value="color5" />
-      <label for="color5">Palette 5</label><br />
-      <input type="radio" id="color" name="color" value="color6" />
-      <label for="color6">Palette 6</label><br />
-      </div>
-    
+  const html1 = `
+  <div class="title-and-save">
+    <button class="back">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="icon">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+        </svg>
+    </button>
+  </div>
+  <div class="command-wrapper"></div>
+    <h2 id="title-input">Farbpalette wählen:</h2>  
+  </div>    
   `;
-  const setupContent = document.querySelector(".setup-content");
 
-  setupContent.innerHTML = html;
+  const html2 = `
+  <div class="color-wrapper">    
+  `;
+
+  let html3 = "";
+
+  Object.keys(colorThemes.palette).forEach((color) => {
+    if (color.includes("color")) {
+      html3 += `<div class="color-palette-wrapper" data-color="${color}">`;
+      colorThemes.palette[color].forEach((colorNumbers) => {
+        html3 += `<div class="color-piece" style="background-color: ${colorNumbers}"></div>`;
+      });
+      html3 += `</div>`;
+    }
+  });
+
+  const html4 = ` 
+  </div>
+`;
+
+  const setupContent = document.querySelector(".setup-content");
+  setupContent.innerHTML = html1 + html2 + html3 + html4;
 
   const backButtonEl = setupContent.querySelector(".back");
   backButtonEl.addEventListener("click", goBack);
 
-  const choice = setupContent.querySelector(".colorPalette");
-  choice.addEventListener("click", () => chooseColor(setupContent));
+  const colorWrapper = setupContent.querySelectorAll(".color-palette-wrapper");
+  colorWrapper.forEach((colorPalette) => {
+    const colorP = colorPalette.getAttribute("data-color");
+    colorPalette.addEventListener("click", () => chooseColor(colorP));
+  });
 
   switchDisplay("setup");
 }
 
-function chooseColor(content) {
-  const color = content.querySelectorAll("#color");
-  color.forEach((element) => {
-    if (element.checked) {
-      root = document.querySelector(":root");
-      root.style.setProperty("--color-palette-0", colorThemes.palette[element.value][0]);
-      root.style.setProperty("--color-palette-1", colorThemes.palette[element.value][1]);
-      root.style.setProperty("--color-palette-2", colorThemes.palette[element.value][2]);
-      root.style.setProperty("--color-palette-3", colorThemes.palette[element.value][3]);
-    }
-  });
+function chooseColor(palette) {
+  const root = document.querySelector(":root");
+
+  root.style.setProperty("--color-main", colorThemes.palette[palette][0]);
+  root.style.setProperty("--color-font", colorThemes.palette[palette][1]);
+  root.style.setProperty("--color-background", colorThemes.palette[palette][2]);
+  root.style.setProperty("--color-other", colorThemes.palette[palette][3]);
+  root.style.setProperty("--color-main-font", colorThemes.palette[palette][0]);
+
+  if (palette === "color9" || palette === "color10") {
+    root.style.setProperty("--color-main-font", colorThemes.palette[palette][1]);
+  }
+  saveSetupToLocalStorage(palette);
+}
+
+function saveSetupToLocalStorage(setupInfo) {
+  localStorage.setItem(LOCAL_STORAGE_KEY_SETUP, JSON.stringify(setupInfo));
+}
+
+function loadSetupFromLocalStorage() {
+  const setup = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_SETUP));
+
+  if (setup !== null) {
+    chooseColor(setup);
+  }
 }
