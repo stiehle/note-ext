@@ -110,11 +110,9 @@
   background-color: var(--color-background);
   cursor: pointer;
 }
-
 .note-entry:hover,
 .color-palette-wrapper:hover {
-  /* background-color: "#D3D3D3"; */
-  background-color: lightgray;
+  background-color: "#708090";
   filter: brightness(0.9);
   cursor: pointer;
 }
@@ -141,7 +139,7 @@
 }
 
 .selected {
-  background-color: var(--color-other);
+  background-color: var(--color-background);
   cursor: auto;
 }
 
@@ -255,7 +253,7 @@
   top: 70px;
   left: 10px;
   height: auto;
-  width: 293px;
+  width: 290px;
   background-color: var(--color-main);
   border-radius: 5px;
   border: 2px solid var(--color-other);

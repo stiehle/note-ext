@@ -16,7 +16,7 @@ const DISPLAYS = {
 };
 
 const LOCAL_STORAGE_KEY = "notesApp-notes";
-const LOCAL_STORAGE_KEY_SETUP = "notesApp-setup";
+const LOCAL_STORAGE_KEY_SETUP = "notesApp-color";
 
 let notesList = [];
 
@@ -91,8 +91,8 @@ function showNotesList() {
                   </svg>
                 </div>
               </div>          
-            <div class="note-title">${element.title}</div>
-        <div class="note-content-teaser">${element.content}</div>  
+            <div class="note-title">${escapeHtml(element.title)}</div>
+        <div class="note-content-teaser">${escapeHtml(element.content)}</div>  
         <div class="note-date">${new Date(element.lastUpdated).toLocaleString("de-DE")}</div> 
       </div>`;
   });
@@ -100,7 +100,6 @@ function showNotesList() {
   notesListEl.innerHTML = html;
   const notesListElListener = document.querySelectorAll(".note-entry");
   notesListElListener.forEach((element) => {
-    // element.addEventListener("click", () => selectedNoteEntry(element.getAttribute("data-id")));
     element.addEventListener("click", selectedNoteEntry);
 
     const noteEntryColorbarEl = element.querySelector(".note-entry-colorbar");
@@ -111,14 +110,17 @@ function showNotesList() {
 }
 
 function noteEntryColorbar(e) {
-  checkToRemoveSubMenu();
   const element = e.currentTarget;
+
+  const subMenuEl = element.querySelector(".sub-menu");
+  if (subMenuEl) return;
+
   const colors = colorThemes.palette.standard;
 
   let html1 = `
-  <div class="sub-menu"> 
-  <div class="sub-menu-title">Farbe wählen</div>  
-  <div class="sub-menu-color">`;
+  <div tabindex=-1 class="sub-menu"> 
+    <div class="sub-menu-title">Farbe wählen</div>  
+      <div class="sub-menu-color">`;
 
   let html2 = "";
 
@@ -127,7 +129,7 @@ function noteEntryColorbar(e) {
   });
 
   let html3 = `
-  </div>
+      </div>
     <div class="sub-menu-footer sub-menu-title">mehr Farben ...</div> 
     <div class="sub-menu-more-colors"></div>
   </div> 
@@ -135,21 +137,27 @@ function noteEntryColorbar(e) {
 
   element.innerHTML += html1 + html2 + html3;
 
+  const subMenu = element.querySelector(".sub-menu");
+  subMenu.focus();
+  subMenu.addEventListener("focusout", checkToRemoveSubMenu);
+
   const moreColors = element.querySelector(".sub-menu-footer");
-  moreColors.addEventListener("click", randomSubMenuColors);
+  moreColors.addEventListener("click", moreSubMenuColors);
   element.classList.add("active-sub-menu");
 }
 
-function randomSubMenuColors(e) {
+function moreSubMenuColors(e) {
   e.stopPropagation();
-
-  const numberOfColors = Object.keys(allStandardColors).length;
-
   let html = "";
 
-  for (let i = 0; i < 32; i++) {
-    let colorNumber = getRandomNumber(0, numberOfColors);
-    let color = allStandardColors[Object.keys(allStandardColors)[colorNumber]];
+  const numberOfColors = Object.keys(allStandardColors).length;
+  const startPositionColors = 12;
+  const moreColors = 32;
+  const moreColorsSpacing = Math.floor((numberOfColors - startPositionColors) / moreColors);
+
+  for (let i = 0; i < moreColors; i++) {
+    let colorNumber = i * moreColorsSpacing;
+    let color = allStandardColors[Object.keys(allStandardColors)[colorNumber + startPositionColors]];
 
     html += `<div class="sub-menu-color-box" style="background-color: ${color}" data-color="${color}"></div> `;
   }
@@ -164,10 +172,6 @@ function randomSubMenuColors(e) {
 function getStillSelectetObject() {
   const element = document.querySelector(".note-entry.selected");
   return element;
-}
-
-function getRandomNumber(min, max) {
-  return (number = Math.floor(Math.random() * (max - min) + 1) + min);
 }
 
 function createNewText() {
@@ -215,14 +219,15 @@ function selectedNoteEntry(e) {
 
   if (colorbarEl.classList.contains("active-sub-menu")) {
     colorbarEl.classList.remove("active-sub-menu");
-    colorbarEl.classList.add("wait");
-  } else if (!colorbarEl.classList.contains("wait")) {
+    colorbarEl.classList.add("stop-action");
+  } else if (!colorbarEl.classList.contains("stop-action")) {
     titleInputEl.value = findNote.title;
     contentInputEl.value = findNote.content;
     switchDisplay("text");
   } else {
-    colorbarEl.classList.remove("wait");
-    checkToRemoveSubMenu();
+    if (!colorbarEl.querySelector(".sub-menu")) {
+      colorbarEl.classList.remove("stop-action");
+    }
   }
 
   saveToLocalStorage();
@@ -230,7 +235,6 @@ function selectedNoteEntry(e) {
 
 function deleteAllSelections() {
   const elements = document.querySelectorAll(".note-entry.selected");
-  // const notSelectetElements = document.querySelectorAll(".note-entry:not(.selected)");
 
   elements.forEach((select) => {
     select.classList.remove("selected");
@@ -251,7 +255,7 @@ function deleteNoteEntry() {
   const element = document.querySelector(".note-entry.selected");
   if (element === null) return;
 
-  note = getStillSelcetedNote();
+  const note = getStillSelcetedNote();
 
   const filteredNotesList = notesList.filter((element) => {
     return element !== note;
@@ -309,14 +313,8 @@ function setup() {
   const notesApp = document.querySelector(".notes-app");
 
   if (!document.querySelector(".setup-content")) {
-    // document.querySelector(".notes-app").innerHTML += `<div class="setup-content"></div>`; //don't work!
     notesApp.insertAdjacentHTML("beforeend", `<div class="setup-content"></div>`);
   }
-  // if (!document.querySelector(".setup-content")) {
-  //   const addSetupNode = document.createElement("div");
-  //   addSetupNode.classList.add("setup-content");
-  //   notesApp.appendChild(addSetupNode);
-  // }
 
   const html1 = `
   <div class="title-and-save">
@@ -391,4 +389,8 @@ function loadSetupFromLocalStorage() {
   if (setup !== null) {
     chooseColor(setup);
   }
+}
+
+function escapeHtml(unsafe) {
+  return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
